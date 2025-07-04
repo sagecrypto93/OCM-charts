@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Realized Profit Chart</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body style="background-color:#18181D; margin:0; padding:0;">
+  <div id="chart" style="width:100%; max-width:900px; height:500px; margin:auto;"></div>
+  <script>
+    const token = "0d866412-d29c-41ed-a044-7be4fb52478a";
+    const endpoint = "https://api.researchbitcoin.net/v1/realizedprofit/realized_profit";
+    const params = new URLSearchParams({
+      token: token,
+      date_field: "2023-01-01",
+      output_format: "json"
+    });
+
+    fetch(`${endpoint}?${params}`)
+      .then(res => res.json())
+      .then(result => {
+        const data = result.data;
+        const entries = Object.entries(data).sort(([a], [b]) => new Date(a) - new Date(b));
+        const dates = entries.map(([date]) => date);
+        const values = entries.map(([_, val]) => val);
+
+        Plotly.newPlot('chart', [{
+          x: dates,
+          y: values,
+          type: 'scatter',
+          mode: 'lines',
+          line: { color: '#1F7120', width: 2 },
+          name: 'Realized Profit'
+        }], {
+          plot_bgcolor: '#18181D',
+          paper_bgcolor: '#18181D',
+          font: { color: '#FFFFFF' },
+          xaxis: { title: 'Date', gridcolor: '#212127' },
+          yaxis: { title: 'USD Profit', gridcolor: '#212127' },
+          margin: { t: 10, b: 80 }
+        });
+      })
+      .catch(err => {
+        console.error("Chart failed to load:", err);
+        document.body.innerHTML = `<p style="color:white; text-align:center;">Failed to load chart.</p>`;
+      });
+  </script>
+</body>
+</html>
