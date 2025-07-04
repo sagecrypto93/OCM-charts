@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Realized Profit - OnChainMind</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    body {
+      background-color: #18181D;
+      color: white;
+      font-family: Inter, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    #chart {
+      width: 100%;
+      max-width: 900px;
+      height: 550px;
+      margin: 0 auto;
+    }
+  </style>
+</head>
+<body>
+  <h2>Realized Profit (USD)</h2>
+  <div id="chart"></div>
+
+  <script>
+    const token = "0d866412-d29c-41ed-a044-7be4fb52478a";
+    const endpoint = "https://api.researchbitcoin.net/v1/realizedprofit/realized_profit";
+    const params = new URLSearchParams({
+      token: token,
+      date_field: "2023-01-01",
+      output_format: "json"
+    });
+
+    fetch(`${endpoint}?${params}`, {
+      headers: { Accept: "application/json" }
+    })
+      .then(response => response.json())
+      .then(result => {
+        const data = result.data;
+        if (!data || Object.keys(data).length === 0) throw new Error("No data returned");
+
+        const entries = Object.entries(data).sort(([a], [b]) => new Date(a) - new Date(b));
+        const dates = entries.map(([date]) => date);
+        const values = entries.map(([_, val]) => val / 1e9); // Convert to billions
+
+        Plotly.newPlot('chart', [{
+          x: dates,
+          y: values,
+          type: 'scatter',
+          mode: 'lines',
+          name: 'Realized Profit (B USD)',
+          line: {
+            color: '#1F7120',
+            width: 2
+          }
+        }], {
+          plot_bgcolor: '#18181D',
+          paper_bgcolor: '#18181D',
+          font: { color: '#FFFFFF' },
+          xaxis: {
+            title: 'Date',
+            gridcolor: '#212127',
+            zerolinecolor: '#212127'
+          },
+          yaxis: {
+            title: 'Profit (Billions USD)',
+            gridcolor: '#212127',
+            zerolinecolor: '#212127'
+          },
+          margin: { t: 40, b: 80 },
+          legend: {
+            orientation: 'h',
+            y: -0.3,
+            x: 0.5,
+            xanchor: 'center'
+          }
+        });
+      })
+      .catch(err => {
+        document.getElementById('chart').innerHTML = '<p style="color:red">Failed to load Realized Profit data.</p>';
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
